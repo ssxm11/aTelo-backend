@@ -8,6 +8,7 @@ export interface IUser extends Document {
   name: string;
   email: string;
   password: string;
+  feeling: boolean;
   role: 'user' | 'admin';
   isActive: boolean;
   createdAt: Date;
@@ -46,6 +47,11 @@ const userSchema = new Schema<IUser>(
     isActive: {
       type: Boolean,
       default: true
+    }
+    ,
+    feeling: {
+      type: Boolean,
+      default: false
     }
   },
   {
