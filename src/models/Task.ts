@@ -10,6 +10,7 @@ export interface ITask extends Document {
   priority: 'low' | 'medium' | 'high' | 'urgent';
   dueDate?: Date;
   user: Types.ObjectId;
+  goal: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -56,10 +57,16 @@ const taskSchema = new Schema<ITask>(
     user: {
       type: Schema.Types.ObjectId,
       ref: 'User',
-      
       index: true
-    }
+    },
+    goal: {
+      type: Schema.Types.ObjectId,
+      ref: 'Goal',
+      required: true,
+      index: true,
+},
   },
+  
   {
     timestamps: true
   }
