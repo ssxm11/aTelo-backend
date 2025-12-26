@@ -11,6 +11,7 @@ import { errorHandler } from './middleware/errorHandler';
 import { notFound } from './middleware/notFound';
 import userRoutes from './routes/userRoutes';
 import authRoutes from './routes/authRoutes';
+import taskRoutes from './routes/taskRoutes';
 
 dotenv.config();
 
@@ -19,7 +20,11 @@ const PORT = process.env.PORT || 5000;
 
 // Middlewares
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true,
+}));
+
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -32,6 +37,7 @@ app.get('/health', (req, res) => {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/tasks', taskRoutes);
 
 // Error handlers
 app.use(notFound);
