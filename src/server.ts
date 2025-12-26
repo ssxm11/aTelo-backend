@@ -12,6 +12,7 @@ import { notFound } from './middleware/notFound';
 import userRoutes from './routes/userRoutes';
 import authRoutes from './routes/authRoutes';
 import taskRoutes from './routes/taskRoutes';
+import goalRoutes from './routes/goalRoutes';
 
 dotenv.config();
 
@@ -38,7 +39,7 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/tasks', taskRoutes);
-
+app.use('/api/goals', goalRoutes);
 // Error handlers
 app.use(notFound);
 app.use(errorHandler);
