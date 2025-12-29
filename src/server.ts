@@ -13,6 +13,8 @@ import userRoutes from './routes/userRoutes';
 import authRoutes from './routes/authRoutes';
 import taskRoutes from './routes/taskRoutes';
 import goalRoutes from './routes/goalRoutes';
+import aiRoutes from './routes/ai.routes';
+
 
 dotenv.config();
 
@@ -40,6 +42,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/goals', goalRoutes);
+app.use('/api/ai', aiRoutes);
+
 // Error handlers
 app.use(notFound);
 app.use(errorHandler);
