@@ -2,6 +2,7 @@
 import { Router } from 'express';
 import axios from 'axios';
 import { User } from '../models/User';
+import { CheckIn } from '../models/CeckIn';
 import { protect } from '../middleware/auth';
 
 const router = Router();
@@ -9,6 +10,11 @@ const router = Router();
 router.post('/check-in', protect, async (req, res) => {
   const { message } = req.body;
   const userId = req.user!.id;
+  console.log('🧠 CHECK-IN START');
+  console.log('User ID:', userId);
+  console.log('Message:', message);
+  console.log('API KEY exists:', !!process.env.AIML_API_KEY);
+
 
   try {
     const aiRes = await axios.post(
@@ -19,31 +25,46 @@ router.post('/check-in', protect, async (req, res) => {
           {
             role: 'system',
             content: `
-You are an assistant whose only task is to decide whether a person
-is emotionally able to work, study, or make progress today.
+You are an assistant that performs a brief emotional check-in.
 
-Based on the user's message, return ONLY one word:
-true or false.
+Based on the user's message, you must return a JSON object
+with exactly two fields:
 
-Return false if the message shows:
+{
+  "feeling": boolean,
+  "diagnosis": string
+}
+
+Rules:
+
+- "feeling" represents whether the person is emotionally able
+  to work, study, or make progress today.
+- "diagnosis" must be ONE of the following values only:
+  calm, motivated, tired, overwhelmed, foggy
+
+Return "feeling: false" if the message shows:
 - emotional exhaustion
 - anxiety or overwhelm
-- lack of sleep
-- sadness, distress, or emotional pain
-- strong resistance or aversion to working
+- sadness or emotional pain
 - confusion or mental fog
+- strong resistance to working
 
-Return true if the message shows:
+Return "feeling: true" if the message shows:
 - emotional stability
 - calm motivation
 - neutrality or mild tiredness without distress
-- willingness to try, even slowly
 
-If the message is ambiguous or unclear, default to false.
+If the message is ambiguous, default to:
+{
+  "feeling": false,
+  "diagnosis": "foggy"
+}
 
 Do not give advice.
-Do not explain your decision.
-Do not output anything other than true or false.
+Do not explain.
+Do not add extra text.
+Only return valid JSON.
+
             `
           },
           {
@@ -59,22 +80,46 @@ Do not output anything other than true or false.
         }
       }
     );
+    console.log(' AI RAW RESPONSE:', JSON.stringify(aiRes.data, null, 2));
+    if (!aiRes.data?.choices?.length) {
+        console.error('❌ AI response has no choices');
+      return res.status(500).json({ message: 'Invalid AI response' });
+}
+const result = JSON.parse(
+  aiRes.data.choices[0].message.content
+);
 
-    const content =
-      aiRes.data.choices[0].message.content.trim().toLowerCase();
+const { feeling, diagnosis } = result;
 
-    const canProceed = content === 'true';
-    await User.findByIdAndUpdate(userId, {
-      feeling: canProceed
-    });
-    res.json({
-      canProceed: content.includes('true')
-    });
+// actualizar resumen en User
+await User.findByIdAndUpdate(userId, {
+  feeling
+});
+
+// guardar evento
+await CheckIn.create({
+  userId,
+  feeling,
+  diagnosis
+});
+
+res.json({ feeling, diagnosis });
+
 
     
-  } catch (err) {
-    res.status(500).json({ message: 'AI check failed' });
+  } catch (err: any) {
+  console.error('❌ AI CHECK-IN ERROR');
+  
+  if (err.response) {
+    console.error('Status:', err.response.status);
+    console.error('Data:', err.response.data);
+  } else {
+    console.error(err);
   }
+
+  res.status(500).json({ message: 'AI check failed' });
+}
+
 });
 
 export default router;
