@@ -8,6 +8,13 @@ export interface IGoal extends Document {
   title: string;
   description?: string;
   user: Types.ObjectId;
+  type: 'goal' | 'intention';
+  intention: {
+    enabled: boolean;
+    recurrence: 'daily' | 'weekly';
+    lastShownAt?: Date;
+    lastAcceptedAt?: Date;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -30,6 +37,24 @@ const goalSchema = new Schema<IGoal>(
       required: true,
       index: true,
     },
+    type: {
+      type: String,
+      enum: ['goal', 'intention'],
+      default: 'goal'
+    },
+
+    intention: {
+      enabled: { type: Boolean, default: false },
+
+      recurrence: {
+        type: String,
+        enum: ['daily', 'weekly'],
+        default: 'daily'
+      },
+
+      lastShownAt: { type: Date },
+      lastAcceptedAt: { type: Date }
+    }
   },
   { timestamps: true }
 );

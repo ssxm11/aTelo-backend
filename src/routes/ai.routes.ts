@@ -10,9 +10,7 @@ const router = Router();
 router.post('/check-in', protect, async (req, res) => {
   const { message } = req.body;
   const userId = req.user!.id;
-  console.log('🧠 CHECK-IN START');
-  console.log('User ID:', userId);
-  console.log('Message:', message);
+  
   console.log('API KEY exists:', !!process.env.AIML_API_KEY);
 
 
